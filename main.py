@@ -1,12 +1,14 @@
 from fastapi import FastAPI
 import jugadores
 
+# https://rayo-api.onrender.com/
+
 app = FastAPI()
 
 # Routers
 app.include_router(jugadores.router)
 
-# http://127.0.0.1:8000/
+# https://rayo-api.onrender.com/
 @app.get("/")
 async def root():
-    return "Hola FastAPI"
+    return "Rayo de Hortaleza"

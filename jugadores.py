@@ -1,17 +1,25 @@
 from fastapi import APIRouter
+from db import db
 
-router = APIRouter(prefix="/jugadores", # prefijo general
-                   tags=["jugadores"], # etiqueta para documentacion
-                   responses={404: {"message": "No encontrado"}}) # respuesta si falla el server
+router = APIRouter(
+    prefix="/jugadores",
+    tags=["jugadores"],
+    responses={404: {"message": "No encontrado"}}
+)
 
-lista_jugadores = ["Producto 1", "Producto 2", "Producto 3", "Producto 4", "Producto 5"]
-
-# http://127.0.0.1:8000/jugadores
+# GET /jugadores
 @router.get("/")
-async def jugadores():
-   return lista_jugadores
+async def get_jugadores():
+    docs = db.collection("jugadores").stream()
 
-# http://127.0.0.1:8000/jugadores/1
+    jugadores = [doc.to_dict() | {"id": doc.id} for doc in docs]
+    return jugadores
+
+# GET /jugadores/{id}
 @router.get("/{id}")
-async def jugadores(id: int):
-    return lista_jugadores[id]
+async def get_jugador(id: str):
+    doc = db.collection("jugadores").document(id).get()
+
+    if doc.exists:
+        return doc.to_dict()
+    return {"error": "Jugador no encontrado"}

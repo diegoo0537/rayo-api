@@ -11,9 +11,3 @@ cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred)
 
 db = firestore.Client()
-
-# Leer (sigue funcionando)
-jugadores = db.collection("jugadores").stream()
-
-for doc in jugadores:
-    print(doc.id, doc.to_dict())
