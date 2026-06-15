@@ -1,16 +1,19 @@
-"""import os
-from google.cloud import firestore
+import os
+import json
 import firebase_admin
 from firebase_admin import credentials
-
-cred = credentials.Certificate(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
-firebase_admin.initialize_app(cred)
-db = firestore.Client()"""
-
 from google.cloud import firestore
+
+cred_json = os.getenv("FIREBASE_CREDENTIALS")
+cred_dict = json.loads(cred_json)
+
+cred = credentials.Certificate(cred_dict)
+firebase_admin.initialize_app(cred)
 
 db = firestore.Client()
 
 # Leer (sigue funcionando)
 jugadores = db.collection("jugadores").stream()
-print(jugadores)
+
+for doc in jugadores:
+    print(doc.id, doc.to_dict())
