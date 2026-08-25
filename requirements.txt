@@ -1,4 +1,9 @@
 fastapi
 uvicorn
-google-cloud-firestore
-firebase-admin
+bcrypt
+python-dotenv
+supabase
+httpx
+pydantic
+pydantic-settings
+python-multipart

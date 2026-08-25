@@ -1,5 +1,7 @@
-from fastapi import APIRouter
-from db import db
+import uuid
+from fastapi import APIRouter, Body
+from db import jugadores_db
+from clases.jugador import Jugador
 
 router = APIRouter(
     prefix="/jugadores",
@@ -10,16 +12,52 @@ router = APIRouter(
 # GET /jugadores
 @router.get("/")
 async def get_jugadores():
-    docs = db.collection("jugadores").stream()
+    jugadores = jugadores_db.select("*").order("numero").execute()
+    return jugadores.data
 
-    jugadores = [doc.to_dict() | {"id": doc.id} for doc in docs]
-    return jugadores
+# POST /jugadores
+@router.post("/")
+async def add_jugador(jugador:Jugador):
+    existe = jugadores_db.select("numero").eq("numero", jugador.numero).execute()
 
-# GET /jugadores/{id}
-@router.get("/{id}")
-async def get_jugador(id: str):
-    doc = db.collection("jugadores").document(id).get()
+    if existe.data:
+        return False
+    else:
+        jugador.id = uuid.uuid4()
+        jugador.nombre = jugador.nombre.upper()
 
-    if doc.exists:
-        return doc.to_dict()
-    return {"error": "Jugador no encontrado"}
+        data = jugador.dict()
+        data["id"] = str(data["id"])
+
+        jugadores_db.insert(data).execute()
+        return True
+
+# PUT /jugadores/{numero}
+@router.put("/{numero}")
+async def update_jugador(numero: int, datos: dict = Body(...)):
+    existe = jugadores_db.select("numero").eq("numero", numero).execute()
+
+    if existe.data:
+        # Eliminar campos que NO deben actualizarse
+        datos.pop("id", None)
+        datos.pop("nombre", None)
+        datos.pop("numero", None)
+
+        # Eliminar valores null (no modificados)
+        datos = {k: v for k, v in datos.items() if v is not None}
+
+        jugadores_db.update(datos).eq("numero", numero).execute()
+        return True
+    else:
+        return False
+
+# DELETE /jugadores/{numero}
+@router.delete("/{numero}")
+async def delete_jugador(numero:int):
+    existe = jugadores_db.select("numero").eq("numero", numero).execute()
+
+    if existe.data:
+        jugadores_db.delete().eq("numero", numero).execute()
+        return True
+    else:
+        return False

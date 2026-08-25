@@ -1,13 +1,19 @@
+from supabase import create_client
+from dotenv import load_dotenv
 import os
-import json
-import firebase_admin
-from firebase_admin import credentials
-from google.cloud import firestore
 
-cred_json = os.getenv("FIREBASE_CREDENTIALS")
-cred_dict = json.loads(cred_json)
+# Cargar archivo .env
+load_dotenv()
 
-cred = credentials.Certificate(cred_dict)
-firebase_admin.initialize_app(cred)
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-db = firestore.Client()
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise Exception("No se encontraron las variables de entorno de Supabase")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+jugadores_db = supabase.schema("public").table("jugadores")
+partidos_db = supabase.schema("public").table("partidos")
+
+#print(supabase.schema("public").table("partidos").select("*").execute())
